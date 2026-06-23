@@ -1,0 +1,39 @@
+# ── Maven / Java ──────────────────────────────────────────────
+backend/target/
+backend/*.class
+backend/.mvn/wrapper/maven-wrapper.jar
+!backend/.mvn/wrapper/maven-wrapper.properties
+
+# ── Node / React ──────────────────────────────────────────────
+frontend/node_modules/
+frontend/build/
+frontend/.pnp
+frontend/.pnp.js
+frontend/.env.local
+frontend/.env.*.local
+
+# ── IDE ───────────────────────────────────────────────────────
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+*.swp
+*.swo
+
+# ── macOS ─────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# ── Logs ──────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ── Tests / Coverage ──────────────────────────────────────────
+frontend/coverage/
+
