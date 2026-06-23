@@ -1,0 +1,72 @@
+/* =============================================
+   GAME LIST
+   ============================================= */
+
+.game-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Stagger card entrance animations */
+.game-list > *:nth-child(1)  { animation-delay: 0.05s; }
+.game-list > *:nth-child(2)  { animation-delay: 0.1s; }
+.game-list > *:nth-child(3)  { animation-delay: 0.15s; }
+.game-list > *:nth-child(4)  { animation-delay: 0.2s; }
+.game-list > *:nth-child(5)  { animation-delay: 0.25s; }
+.game-list > *:nth-child(6)  { animation-delay: 0.3s; }
+.game-list > *:nth-child(n+7){ animation-delay: 0.35s; }
+
+/* ── Status States ── */
+.game-list__status {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 5rem 2rem;
+  color: var(--color-muted);
+}
+
+.game-list__status-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-purple);
+}
+
+.game-list__status-title {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--color-text);
+}
+
+.game-list__status-sub {
+  font-family: var(--font-ui);
+  font-size: 0.875rem;
+  color: var(--color-muted);
+  text-align: center;
+  max-width: 280px;
+  line-height: 1.6;
+}
+
+/* ── Loader ── */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.game-list__spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(108, 99, 255, 0.2);
+  border-top-color: var(--color-purple);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}

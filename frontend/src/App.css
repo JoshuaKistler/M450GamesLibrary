@@ -1,0 +1,63 @@
+/* =============================================
+   GAMES LIBRARY – GLOBAL DARK GAMING THEME
+   ============================================= */
+
+:root {
+  --color-bg:        #080b14;
+  --color-bg-2:      #0d1117;
+  --color-surface:   #111827;
+  --color-surface-2: #1a2236;
+  --color-border:    #1e2d45;
+  --color-cyan:      #00d4ff;
+  --color-purple:    #6c63ff;
+  --color-pink:      #ff006e;
+  --color-yellow:    #ffd60a;
+  --color-green:     #06d6a0;
+  --color-text:      #e2e8f0;
+  --color-muted:     #64748b;
+  --color-white:     #ffffff;
+  --font-heading:    'Orbitron', monospace;
+  --font-body:       'Rajdhani', sans-serif;
+  --font-ui:         'Inter', sans-serif;
+  --glow-cyan:       0 0 20px rgba(0, 212, 255, 0.4), 0 0 40px rgba(0, 212, 255, 0.1);
+  --glow-purple:     0 0 20px rgba(108, 99, 255, 0.4), 0 0 40px rgba(108, 99, 255, 0.1);
+  --glow-pink:       0 0 20px rgba(255, 0, 110, 0.4), 0 0 40px rgba(255, 0, 110, 0.1);
+  --radius-card:     16px;
+  --radius-btn:      8px;
+  --transition:      0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Custom Scrollbar ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--color-bg-2); }
+::-webkit-scrollbar-thumb {
+  background: var(--color-purple);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--color-cyan); }
+
+/* ── Selection ── */
+::selection {
+  background: rgba(108, 99, 255, 0.4);
+  color: var(--color-white);
+}

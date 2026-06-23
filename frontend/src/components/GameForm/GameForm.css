@@ -1,0 +1,371 @@
+/* =============================================
+   GAME FORM – GLASSMORPHISM MODAL
+   ============================================= */
+
+@keyframes overlay-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes modal-in {
+  from { opacity: 0; transform: translateY(30px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+
+.game-form__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 11, 20, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 1rem;
+  animation: overlay-in 0.2s ease;
+  backdrop-filter: blur(6px);
+}
+
+.game-form {
+  background: rgba(17, 24, 39, 0.9);
+  border: 1px solid rgba(108, 99, 255, 0.3);
+  border-radius: 20px;
+  padding: 2.25rem;
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  box-shadow:
+    0 25px 60px rgba(0, 0, 0, 0.6),
+    0 0 40px rgba(108, 99, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  animation: modal-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  backdrop-filter: blur(20px);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Top glow accent */
+.game-form::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--color-purple), var(--color-cyan), var(--color-pink));
+}
+
+/* ── Header ── */
+.game-form__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+}
+
+.game-form__title {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, var(--color-cyan), var(--color-purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+}
+
+.game-form__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-muted);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.game-form__close:hover {
+  border-color: var(--color-pink);
+  color: var(--color-pink);
+  background: rgba(255, 0, 110, 0.1);
+}
+
+/* ── Labels & Inputs ── */
+.game-form__label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  font-family: var(--font-ui);
+  font-weight: 500;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.game-form__input {
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+  color: var(--color-text);
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+}
+
+.game-form__input::placeholder {
+  color: var(--color-muted);
+  font-style: italic;
+  opacity: 0.7;
+}
+
+.game-form__input:focus {
+  border-color: var(--color-purple);
+  background: rgba(108, 99, 255, 0.06);
+  box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.15);
+}
+
+/* dark date picker icon */
+.game-form__input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.7);
+  cursor: pointer;
+}
+
+.game-form__input--error {
+  border-color: var(--color-pink) !important;
+  box-shadow: 0 0 0 3px rgba(255, 0, 110, 0.15) !important;
+}
+
+.game-form__textarea {
+  resize: vertical;
+  min-height: 100px;
+  line-height: 1.6;
+}
+
+.game-form__error {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #ff6b9d;
+  font-size: 0.78rem;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* ── Required asterisk ── */
+.game-form__required {
+  color: var(--color-pink);
+  margin-left: 2px;
+}
+
+/* ── Actions ── */
+.game-form__actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.game-form__btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-family: var(--font-heading);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.game-form__btn:active { transform: scale(0.98); }
+
+.game-form__btn--cancel {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--color-border);
+  color: var(--color-muted);
+}
+
+.game-form__btn--cancel:hover {
+  border-color: var(--color-muted);
+  color: var(--color-text);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.game-form__btn--submit {
+  background: linear-gradient(135deg, var(--color-purple), var(--color-cyan));
+  color: var(--color-white);
+  box-shadow: var(--glow-purple);
+}
+
+.game-form__btn--submit:hover {
+  box-shadow: var(--glow-cyan);
+  transform: translateY(-1px);
+}
+
+/* ── Steam Import ── */
+.game-form__steam {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 1rem;
+  background: rgba(26, 155, 219, 0.05);
+  border: 1px solid rgba(26, 155, 219, 0.2);
+  border-radius: 12px;
+}
+
+.game-form__steam-label {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #1a9bdb;
+}
+
+.game-form__steam-row {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.game-form__steam-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.game-form__steam-input:focus {
+  border-color: #1a9bdb;
+  background: rgba(26, 155, 219, 0.06);
+  box-shadow: 0 0 0 3px rgba(26, 155, 219, 0.15);
+}
+
+.game-form__btn--steam {
+  flex: none;
+  padding: 0.75rem 1.1rem;
+  background: rgba(26, 155, 219, 0.15);
+  border: 1px solid rgba(26, 155, 219, 0.4);
+  color: #1a9bdb;
+  border-radius: 10px;
+  font-family: var(--font-heading);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+
+.game-form__btn--steam:hover:not(:disabled) {
+  background: rgba(26, 155, 219, 0.25);
+  border-color: #1a9bdb;
+  box-shadow: 0 0 12px rgba(26, 155, 219, 0.3);
+}
+
+.game-form__btn--steam:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+@keyframes steam-spin {
+  to { transform: rotate(360deg); }
+}
+
+.game-form__steam-spinner {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  border: 2px solid rgba(26, 155, 219, 0.3);
+  border-top-color: #1a9bdb;
+  border-radius: 50%;
+  animation: steam-spin 0.7s linear infinite;
+}
+
+/* ── Steam Trefferliste ── */
+.game-form__steam-results {
+  list-style: none;
+  margin: 0;
+  padding: 0.25rem 0;
+  background: rgba(10, 16, 28, 0.97);
+  border: 1px solid rgba(26, 155, 219, 0.3);
+  border-radius: 10px;
+  max-height: 220px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(26, 155, 219, 0.3) transparent;
+}
+
+.game-form__steam-result {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.game-form__steam-result:hover {
+  background: rgba(26, 155, 219, 0.12);
+}
+
+.game-form__steam-result-img {
+  width: 48px;
+  height: 22px;
+  object-fit: cover;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.game-form__steam-result-name {
+  flex: 1;
+  font-size: 0.88rem;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.game-form__steam-result-id {
+  font-size: 0.72rem;
+  color: var(--color-muted);
+  font-family: var(--font-ui);
+  flex-shrink: 0;
+}
+
+.game-form__steam-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+  color: var(--color-muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.game-form__steam-divider::before,
+.game-form__steam-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}

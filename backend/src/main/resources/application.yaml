@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: backend
+
+  # H2 In-Memory Datenbank
+  datasource:
+    url: jdbc:h2:mem:gamesdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  # H2-Konsole (erreichbar unter http://localhost:8080/h2-console)
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  # JPA / Hibernate
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop   # Schema wird beim Start erstellt und beim Beenden gelöscht
+    show-sql: true
+    defer-datasource-initialization: true  # Hibernate erstellt Tabellen BEVOR data.sql läuft
+    properties:
+      hibernate:
+        format_sql: true
+
+  # data.sql beim Start ausführen
+  sql:
+    init:
+      mode: always
