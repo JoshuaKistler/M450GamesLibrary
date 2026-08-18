@@ -37,3 +37,7 @@ yarn-error.log*
 # ── Tests / Coverage ──────────────────────────────────────────
 frontend/coverage/
 
+# ── Cypress E2E-Testartefakte ─────────────────────────────────
+frontend/cypress/videos/
+frontend/cypress/screenshots/
+

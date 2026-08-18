@@ -1,0 +1,14 @@
+{
+  "292030": {
+    "success": true,
+    "data": {
+      "name": "The Witcher 3: Wild Hunt",
+      "short_description": "As war rages on throughout the Northern Realms, you take on the greatest contract of your life.",
+      "header_image": "https://cdn.cloudflare.steamstatic.com/steam/apps/292030/header.jpg",
+      "release_date": {
+        "coming_soon": false,
+        "date": "18 May, 2015"
+      }
+    }
+  }
+}
