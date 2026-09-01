@@ -1,0 +1,278 @@
+/// <reference types="cypress" />
+
+/**
+ * E2E-Tests: Formular-Abbruch und Darstellungs-Randfälle
+ *
+ * BUSINESS VALUE – WARUM DIESE FÄLLE GETESTET WERDEN
+ *
+ * 1. ABBRUCH-AKTIONEN (Cancel) SCHÜTZEN VOR DATENVERLUST
+ *    "Abbrechen" ist eine implizite Sicherheitszusage an den Nutzer: Nichts von
+ *    dem, was ich gerade eingetippt habe, wird gespeichert. Ein Bug, bei dem
+ *    Cancel die Änderungen trotzdem persistiert (oder die Karte in der Liste
+ *    optimistisch überschreibt), zerstört ohne Vorwarnung echte Nutzerdaten und
+ *    ist danach nicht mehr rückgängig zu machen. Genau deshalb genügt es NICHT
+ *    zu prüfen, ob sich das Formular geschlossen hat – geprüft werden muss der
+ *    Datenzustand danach (Liste UND Backend).
+ *
+ * 2. DARSTELLUNGS-RANDFÄLLE ENTSCHEIDEN ÜBER DEN ERSTEN EINDRUCK
+ *    Bilder sind die einzige Nutzdaten-Quelle in dieser App, die aus dem
+ *    Internet nachgeladen wird und damit jederzeit ausfallen kann (Steam ändert
+ *    CDN-Pfade, ein Link wird zur 404, der Nutzer tippt die URL falsch, oder er
+ *    lässt sie ganz weg). Ohne funktionierenden Fallback zeigt die Liste
+ *    kaputte Bild-Icons und wirkt defekt – obwohl die Daten korrekt sind.
+ *    Der Fallback existiert in GameCard.tsx gleich zweifach (bedingtes Rendern
+ *    bei fehlender URL, `onError`-Handler bei kaputter URL). Beide Pfade sind
+ *    bisher ungetestet und würden bei einem Refactoring stillschweigend brechen.
+ *
+ * 3. TASTATURBEDIENBARKEIT IST EINE ZUGÄNGLICHKEITS-ANFORDERUNG
+ *    Nutzer mit motorischen Einschränkungen, Screenreader-Nutzer und schlicht
+ *    schnelle Power-User bedienen Formulare ausschliesslich per Tastatur. Wenn
+ *    die Tab-Reihenfolge nicht der visuellen Reihenfolge entspricht oder das
+ *    Formular sich nicht per Enter absenden lässt, ist die Kernfunktion
+ *    "Spiel erfassen" für diese Gruppe unbenutzbar.
+ *
+ * TESTEINORDNUNG: System-/E2E-Tests, Grey-Box (wir kennen die Komponenten-
+ * Struktur und CSS-Klassen, interagieren aber ausschliesslich über die UI).
+ *
+ * UNABHÄNGIGKEIT: Jeder Test erzeugt eigene Daten mit Timestamp im Titel und
+ * räumt sie in `afterEach` über die API wieder auf.
+ */
+describe('Formular-Abbruch und Darstellungs-Randfälle', () => {
+  const uniqueSuffix = () => Date.now().toString();
+
+  let createdTitles: string[] = [];
+
+  const createGameViaApi = (game: {
+    title: string;
+    description?: string;
+    imageUrl?: string;
+    releaseDate?: string;
+  }) => {
+    createdTitles.push(game.title);
+    return cy.request({
+      method: 'POST',
+      url: '/api/games',
+      body: {
+        title: game.title,
+        description: game.description ?? '',
+        imageUrl: game.imageUrl ?? '',
+        releaseDate: game.releaseDate ?? '2020-05-04',
+      },
+    });
+  };
+
+  /**
+   * Native Tab-Navigation als Ersatz für `cy.tab()`.
+   *
+   * `cypress-plugin-tab` ist in diesem Projekt NICHT installiert (siehe
+   * devDependencies in package.json). Statt eine fehlende Abhängigkeit
+   * vorauszusetzen, wird die Tab-Reihenfolge nativ nachgebildet: Alle
+   * fokussierbaren Elemente werden in DOM-Reihenfolge ermittelt (deaktivierte
+   * und unsichtbare Elemente werden wie im Browser übersprungen) und der Fokus
+   * wandert zum jeweils nächsten Element. Da das Formular keine positiven
+   * `tabindex`-Werte verwendet, entspricht die DOM-Reihenfolge exakt der
+   * echten Tab-Reihenfolge des Browsers.
+   */
+  const FOCUSABLE_SELECTOR = [
+    'a[href]',
+    'button:not([disabled])',
+    'input:not([disabled])',
+    'textarea:not([disabled])',
+    'select:not([disabled])',
+    '[tabindex]:not([tabindex="-1"])',
+  ].join(', ');
+
+  const pressTab = () => {
+    cy.document().then((doc) => {
+      const all = Array.prototype.slice.call(
+        doc.querySelectorAll(FOCUSABLE_SELECTOR)
+      ) as HTMLElement[];
+
+      const tabbables = all.filter((el) => el.getClientRects().length > 0);
+      const currentIndex = tabbables.indexOf(doc.activeElement as HTMLElement);
+      const next = tabbables[(currentIndex + 1) % tabbables.length];
+
+      expect(next, 'nächstes per Tab erreichbares Element').to.exist;
+      next.focus();
+    });
+  };
+
+  beforeEach(() => {
+    createdTitles = [];
+  });
+
+  afterEach(() => {
+    createdTitles.forEach((title) => {
+      cy.deleteGameByTitle(title);
+    });
+    createdTitles = [];
+  });
+
+  it('verwirft Änderungen beim Abbrechen des Bearbeitens vollständig', () => {
+    const suffix = uniqueSuffix();
+    const originalTitle = `Cypress Cancel Original ${suffix}`;
+    const originalDescription = `Originalbeschreibung ${suffix}`;
+    const originalDate = '2018-09-12';
+    const verworfenerTitel = `Cypress Cancel Verworfen ${suffix}`;
+    const verworfeneBeschreibung = `Diese Beschreibung darf NIE gespeichert werden ${suffix}`;
+
+    createGameViaApi({
+      title: originalTitle,
+      description: originalDescription,
+      releaseDate: originalDate,
+    });
+    cy.visitApp();
+
+    cy.contains('.game-card', originalTitle).within(() => {
+      cy.get('.game-card__btn--edit').click();
+    });
+    cy.get('.game-form__title').should('contain.text', 'Edit Game');
+    cy.get('.game-form input[name="title"]').should('have.value', originalTitle);
+
+    cy.fillGameForm({
+      title: verworfenerTitel,
+      description: verworfeneBeschreibung,
+    });
+    cy.get('.game-form input[name="title"]').should('have.value', verworfenerTitel);
+
+    cy.intercept('PUT', '/api/games/*').as('updateGame');
+    cy.get('.game-form__btn--cancel').click();
+    cy.get('.game-form').should('not.exist');
+
+    cy.contains('.game-card', originalTitle).should('be.visible');
+    cy.contains('.game-card', originalTitle).within(() => {
+      cy.get('.game-card__title').should('have.text', originalTitle);
+      cy.get('.game-card__description').should('have.text', originalDescription);
+    });
+
+    cy.contains('.game-card__title', verworfenerTitel).should('not.exist');
+    cy.contains('.game-card__description', verworfeneBeschreibung).should('not.exist');
+    cy.get('@updateGame.all').should('have.length', 0);
+
+    cy.request('GET', '/api/games').then((res) => {
+      const games = res.body as Array<{
+        title: string;
+        description: string;
+        releaseDate: string;
+      }>;
+      const persisted = games.find((g) => g.title === originalTitle);
+
+      expect(persisted, 'Originalspiel existiert weiterhin im Backend').to.exist;
+      expect(persisted!.description).to.eq(originalDescription);
+      expect(persisted!.releaseDate).to.eq(originalDate);
+      expect(games.some((g) => g.title === verworfenerTitel)).to.eq(false);
+    });
+  });
+
+  it('zeigt den "No Image"-Fallback, wenn die Bild-URL kaputt ist (onError)', () => {
+    const suffix = uniqueSuffix();
+    const title = `Cypress Kaputtes Bild ${suffix}`;
+    const brokenImageUrl = `http://localhost:3000/kaputtes-cover-${suffix}.jpg`;
+
+    createGameViaApi({
+      title,
+      description: `Beschreibung ${suffix}`,
+      imageUrl: brokenImageUrl,
+    });
+
+    cy.intercept('GET', `**/kaputtes-cover-${suffix}.jpg`, {
+      statusCode: 404,
+      body: '',
+    }).as('brokenImage');
+
+    cy.visitApp();
+
+    cy.contains('.game-card', title).should('be.visible');
+    cy.wait('@brokenImage');
+
+    cy.contains('.game-card', title).within(() => {
+      cy.get('.game-card__no-image').should('be.visible');
+      cy.get('.game-card__no-image').should('contain.text', 'No Image');
+      cy.get('img').should('not.exist');
+      cy.get(`img[src="${brokenImageUrl}"]`).should('not.exist');
+      cy.get('.game-card__title').should('have.text', title);
+      cy.get('.game-card__btn--edit').should('be.visible');
+    });
+
+    cy.get('.home-page__error').should('not.exist');
+  });
+
+  it('zeigt den "No Image"-Platzhalter, wenn gar keine Bild-URL gesetzt ist', () => {
+    const suffix = uniqueSuffix();
+    const title = `Cypress Ohne Bild ${suffix}`;
+
+    createGameViaApi({
+      title,
+      description: `Beschreibung ${suffix}`,
+      imageUrl: '',
+    });
+    cy.visitApp();
+
+    cy.contains('.game-card', title).should('be.visible');
+    cy.contains('.game-card', title).within(() => {
+      cy.get('.game-card__no-image').should('be.visible');
+      cy.get('.game-card__no-image').should('contain.text', 'No Image');
+      cy.get('img').should('not.exist');
+      cy.get('.game-card__badge').should('be.visible');
+      cy.get('.game-card__btn--delete').should('be.visible');
+    });
+  });
+
+  it('erlaubt das vollständige Ausfüllen und Absenden des Formulars nur mit der Tastatur', () => {
+    const suffix = uniqueSuffix();
+    const title = `Cypress Tastatur ${suffix}`;
+    const description = `Per Tastatur erfasst ${suffix}`;
+    const imageUrl = 'https://example.com/cover.jpg';
+    const releaseDate = '2017-04-21';
+
+    createdTitles.push(title);
+
+    cy.visitApp();
+    cy.openAddGameForm();
+
+    cy.get('.game-form__close').focus();
+    cy.focused().should('have.class', 'game-form__close');
+
+    pressTab();
+    cy.focused().should('have.class', 'game-form__steam-input');
+
+    // Der Steam-Search-Button wird übersprungen, weil er bei leerem
+    // Steam-Suchfeld `disabled` ist - genau wie im echten Browser.
+    pressTab();
+    cy.focused().should('have.attr', 'name', 'title');
+    cy.focused().type(title);
+
+    pressTab();
+    cy.focused().should('have.attr', 'name', 'description');
+    cy.focused().type(description);
+
+    pressTab();
+    cy.focused().should('have.attr', 'name', 'imageUrl');
+    cy.focused().type(imageUrl);
+
+    pressTab();
+    cy.focused().should('have.attr', 'name', 'releaseDate');
+    cy.focused().type(releaseDate);
+
+    pressTab();
+    cy.focused().should('have.class', 'game-form__btn--cancel');
+    pressTab();
+    cy.focused().should('have.class', 'game-form__btn--submit');
+
+    cy.get('.game-form input[name="title"]').should('have.value', title);
+    cy.get('.game-form textarea[name="description"]').should('have.value', description);
+    cy.get('.game-form input[name="imageUrl"]').should('have.value', imageUrl);
+    cy.get('.game-form input[name="releaseDate"]').should('have.value', releaseDate);
+
+    cy.intercept('POST', '/api/games').as('createGame');
+    cy.get('.game-form input[name="title"]').focus().type('{enter}');
+    cy.wait('@createGame').its('response.statusCode').should('eq', 201);
+
+    cy.get('.game-form').should('not.exist');
+    cy.get('.game-form__error').should('not.exist');
+    cy.contains('.game-card', title).within(() => {
+      cy.get('.game-card__title').should('have.text', title);
+      cy.get('.game-card__description').should('have.text', description);
+    });
+  });
+});

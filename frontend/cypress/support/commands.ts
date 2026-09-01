@@ -65,6 +65,25 @@ Cypress.Commands.add('deleteGameByTitle', (title: string) => {
   });
 });
 
+/**
+ * Löst über einen garantiert nicht existierenden Suchbegriff einen leeren
+ * Ergebniszustand aus und prüft, dass "No Games Found" angezeigt wird.
+ * Erwartet, dass die App bereits geöffnet ist (z. B. via `cy.visitApp()`).
+ */
+Cypress.Commands.add('forceEmptyResults', () => {
+  const gibberish = `zzz-kein-treffer-${Date.now()}-qxvz`;
+
+  cy.intercept('GET', '/api/games/search*').as('forceEmptyResultsSearch');
+
+  cy.get('.search-bar__input').clear();
+  cy.get('.search-bar__input').type(gibberish, { delay: 0 });
+  cy.get('.search-bar__button').click();
+  cy.wait('@forceEmptyResultsSearch');
+
+  cy.get('.game-card').should('not.exist');
+  cy.get('.game-list__status-title').should('contain.text', 'No Games Found');
+});
+
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Cypress {
@@ -78,6 +97,7 @@ declare global {
         releaseDate?: string;
       }): Chainable<void>;
       deleteGameByTitle(title: string): Chainable<void>;
+      forceEmptyResults(): Chainable<void>;
     }
   }
 }
