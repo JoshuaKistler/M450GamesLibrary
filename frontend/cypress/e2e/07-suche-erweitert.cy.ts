@@ -1,46 +1,11 @@
 /// <reference types="cypress" />
 
 /**
- * E2E-Tests: Suche – Randfälle (Edge Cases)
- *
- * WARUM SIND DIESE FÄLLE TESTENSWERT?
- *
- * Die bestehende Suite (`02-search.cy.ts`) deckt nur den "Happy Path" ab:
- * ein normaler Suchbegriff mit Treffer und einer ohne Treffer. Genau an den
- * Rändern der Eingabe brechen Suchfunktionen in der Praxis aber am häufigsten:
- *
- * 1. SONDERZEICHEN (%, _, <, &, Umlaute)
- *    Reale Spieltitel enthalten Sonderzeichen ("Pokémon", "S.T.A.L.K.E.R.",
- *    "Tom Clancy's ..."). Zusätzlich sind `%` und `_` SQL-LIKE-Wildcards und
- *    `<`/`&` HTML-Steuerzeichen. Wenn diese Zeichen nicht sauber escaped bzw.
- *    encodiert werden, drohen falsche Treffermengen, 400/500-Fehler oder im
- *    schlimmsten Fall XSS. Nutzerproblem: "Ich suche mein Spiel mit Umlaut und
- *    bekomme nichts / eine Fehlerseite."
- *
- * 2. SEHR LANGE SUCHBEGRIFFE (> 200 Zeichen)
- *    Entstehen real durch Copy-Paste (ganze Beschreibungstexte) oder durch
- *    fehlerhafte Automatisierung. Zu lange Query-Strings können zu 414/400,
- *    zu Timeouts oder zu einer "hängenden" UI führen, die für immer im
- *    Ladezustand bleibt. Nutzerproblem: "Die App friert nach dem Einfügen
- *    eines langen Textes ein."
- *
- * 3. AUSLÖSEVERHALTEN DER SUCHE (Debounce / Trigger)
- *    Ob pro Tastenanschlag ein Request rausgeht, entscheidet über Serverlast
- *    und über Race Conditions (eine späte Antwort überschreibt eine neuere).
- *    Dieses Verhalten ist nirgends getestet und würde bei einem Refactoring
- *    unbemerkt kippen. Nutzerproblem: "Die Ergebnisliste flackert / zeigt
- *    Treffer zu einem Begriff, den ich gar nicht mehr eingegeben habe."
- *
- * TESTEINORDNUNG: System-/E2E-Tests, Grey-Box (wir kennen die API-Endpunkte
- * und die CSS-Klassen, testen aber ausschliesslich über die UI).
- *
- * UNABHÄNGIGKEIT: Jeder Test erzeugt seine eigenen Daten mit Timestamp und
- * räumt sie in `afterEach` über die API wieder auf.
- *
- * HINWEIS ZUM BEGRIFF "KEIN CRASH": Cypress lässt einen Test bei einer
- * unbehandelten Browser-Exception automatisch fehlschlagen. Zusätzlich prüfen
- * wir aktiv, dass die UI weiterhin bedienbar ist (Suchfeld sichtbar) und
- * entweder Treffer oder der "No Games Found"-Zustand gerendert werden.
+ * WARUM TESTENSWERT:
+ * Reale Nutzer geben häufig unerwartete Eingaben wie Sonderzeichen, Emoji-Paste-Fehler oder
+ * extrem lange Strings ein. Dieser Test stellt sicher, dass die Anwendung bei fehlerhaften
+ * oder extremen Eingaben stabil bleibt (kein App-Crash/White Screen) und die Serverlast
+ * durch gezieltes Auslösen der Suche (Button/Enter statt Instant-Search) geschont wird.
  */
 describe('Suche – Sonderzeichen, lange Eingaben und Auslöseverhalten', () => {
   const uniqueSuffix = () => Date.now().toString();

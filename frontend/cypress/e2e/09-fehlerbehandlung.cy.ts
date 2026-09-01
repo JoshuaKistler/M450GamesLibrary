@@ -1,48 +1,11 @@
 /// <reference types="cypress" />
 
 /**
- * E2E-Tests: Fehler- und Ladezustände (Netzwerk-/Serverfehler)
- *
- * WARUM DAS SIMULIEREN VON NETZ- UND SERVERFEHLERN KRITISCH IST
- *
- * Im Testlabor läuft das Backend immer, antwortet sofort und liefert immer 200.
- * In der Realität gilt das nie: Das Backend startet gerade neu, die Datenbank-
- * verbindung ist erschöpft, ein Deployment läuft, der Nutzer sitzt im Zug mit
- * schlechtem Empfang oder das WLAN bricht mitten im Speichern weg. Genau diese
- * Pfade sind der am schlechtesten getestete Teil fast jeder Anwendung – obwohl
- * sie darüber entscheiden, ob der Nutzer der App vertraut.
- *
- * Konkret schützen diese Tests vor drei teuren Fehlerbildern:
- *
- * 1. DIE STUMME WEISSE SEITE
- *    Schlägt der initiale Ladevorgang fehl und die App zeigt nur eine leere
- *    Fläche, kann der Nutzer nicht unterscheiden zwischen "meine Bibliothek ist
- *    leer" und "die App ist kaputt". Er legt im schlimmsten Fall Daten erneut
- *    an, die längst existieren. Eine sichtbare Fehlermeldung (.home-page__error)
- *    ist deshalb ein Feature, kein Detail.
- *
- * 2. DER LÜGENDE ERFOLG (falsches optimistisches Update)
- *    Erscheint ein Spiel nach dem Speichern in der Liste, obwohl der Request
- *    nie beim Server ankam, glaubt der Nutzer, seine Daten seien sicher. Nach
- *    dem nächsten Reload sind sie weg – Datenverlust ohne jede Warnung. Der
- *    Test prüft deshalb explizit, dass NICHTS optimistisch angezeigt wird.
- *
- * 3. DER UNSICHTBARE LADEVORGANG (Doppel-Absenden)
- *    Ohne sichtbaren Lade-Indikator hält der Nutzer die App für eingefroren und
- *    klickt erneut. Das erzeugt doppelte Datensätze und Race Conditions, bei
- *    denen eine alte Antwort eine neuere überschreibt.
- *
- * Da echte Ausfälle nicht reproduzierbar herbeigeführt werden können, werden
- * sie hier über `cy.intercept()` deterministisch simuliert (Statuscode 500,
- * `forceNetworkError`, künstliche `delay`). Das macht die Tests schnell,
- * stabil und unabhängig vom tatsächlichen Zustand des Backends.
- *
- * TESTEINORDNUNG: System-/E2E-Tests, Grey-Box (wir kennen die API-Endpunkte und
- * stubben sie gezielt, prüfen das Ergebnis aber ausschliesslich über die UI).
- *
- * TESTISOLATION: Alle Antworten werden pro Test frisch gestubbt; Cypress setzt
- * Intercepts zwischen Tests automatisch zurück. Tests, die echte Daten anlegen
- * könnten, räumen in `afterEach` über die API auf.
+ * WARUM TESTENSWERT:
+ * Netzwerke und Server-Backends sind nicht 100% zuverlässig. Bei 500er-Serverfehlern oder
+ * Verbindungsabbrüchen muss dem Nutzer klares Feedback über Fehlermeldungen gegeben werden,
+ * damit dieser nicht verwirrt auf einer eingefrorenen Seite verharrt oder Formulare
+ * mehrfach fälschlicherweise absendet.
  */
 describe('Fehlerbehandlung bei Server- und Netzwerkproblemen', () => {
   const uniqueSuffix = () => Date.now().toString();

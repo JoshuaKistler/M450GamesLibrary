@@ -1,41 +1,11 @@
 /// <reference types="cypress" />
 
 /**
- * E2E-Tests: Formular-Abbruch und Darstellungs-Randfälle
- *
- * BUSINESS VALUE – WARUM DIESE FÄLLE GETESTET WERDEN
- *
- * 1. ABBRUCH-AKTIONEN (Cancel) SCHÜTZEN VOR DATENVERLUST
- *    "Abbrechen" ist eine implizite Sicherheitszusage an den Nutzer: Nichts von
- *    dem, was ich gerade eingetippt habe, wird gespeichert. Ein Bug, bei dem
- *    Cancel die Änderungen trotzdem persistiert (oder die Karte in der Liste
- *    optimistisch überschreibt), zerstört ohne Vorwarnung echte Nutzerdaten und
- *    ist danach nicht mehr rückgängig zu machen. Genau deshalb genügt es NICHT
- *    zu prüfen, ob sich das Formular geschlossen hat – geprüft werden muss der
- *    Datenzustand danach (Liste UND Backend).
- *
- * 2. DARSTELLUNGS-RANDFÄLLE ENTSCHEIDEN ÜBER DEN ERSTEN EINDRUCK
- *    Bilder sind die einzige Nutzdaten-Quelle in dieser App, die aus dem
- *    Internet nachgeladen wird und damit jederzeit ausfallen kann (Steam ändert
- *    CDN-Pfade, ein Link wird zur 404, der Nutzer tippt die URL falsch, oder er
- *    lässt sie ganz weg). Ohne funktionierenden Fallback zeigt die Liste
- *    kaputte Bild-Icons und wirkt defekt – obwohl die Daten korrekt sind.
- *    Der Fallback existiert in GameCard.tsx gleich zweifach (bedingtes Rendern
- *    bei fehlender URL, `onError`-Handler bei kaputter URL). Beide Pfade sind
- *    bisher ungetestet und würden bei einem Refactoring stillschweigend brechen.
- *
- * 3. TASTATURBEDIENBARKEIT IST EINE ZUGÄNGLICHKEITS-ANFORDERUNG
- *    Nutzer mit motorischen Einschränkungen, Screenreader-Nutzer und schlicht
- *    schnelle Power-User bedienen Formulare ausschliesslich per Tastatur. Wenn
- *    die Tab-Reihenfolge nicht der visuellen Reihenfolge entspricht oder das
- *    Formular sich nicht per Enter absenden lässt, ist die Kernfunktion
- *    "Spiel erfassen" für diese Gruppe unbenutzbar.
- *
- * TESTEINORDNUNG: System-/E2E-Tests, Grey-Box (wir kennen die Komponenten-
- * Struktur und CSS-Klassen, interagieren aber ausschliesslich über die UI).
- *
- * UNABHÄNGIGKEIT: Jeder Test erzeugt eigene Daten mit Timestamp im Titel und
- * räumt sie in `afterEach` über die API wieder auf.
+ * WARUM TESTENSWERT:
+ * Schützt vor ungewolltem Datenverlust und UI-Fehlern. Bricht ein Nutzer das Editieren ab,
+ * dürfen keine Teileingaben im Speicher verbleiben. Zudem kommen im Web häufig defekte oder
+ * fehlende Bild-URLs vor – ein visueller Fallback ("No Image") verhindert, dass kaputte
+ * HTML-Icons das Layout der Anwendung zerstören.
  */
 describe('Formular-Abbruch und Darstellungs-Randfälle', () => {
   const uniqueSuffix = () => Date.now().toString();
